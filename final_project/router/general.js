@@ -4,6 +4,7 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+
 // Check if a user with the given username already exists
 const doesExist = (username) => {
     // Filter the users array for any user with the same username
@@ -40,38 +41,61 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-// return books object in JSON format
-  return res.send(JSON.stringify(books,null,4));
+public_users.get('/',async function (req, res) {
+  try {
+    const books_array = await Promise.resolve(books);
+    return res.send(JSON.stringify(books_array,null,4));
+  } catch (error) {
+    return res.send (error.message);
+  }
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-//return book object in JSON format assuming unique ISBN
-  let filtered_book = books[req.params.isbn]
-  return res.send(JSON.stringify(filtered_book,null,4));
+public_users.get('/isbn/:isbn',async function (req, res) {
+
+  try {
+    const isbn = req.params.isbn;
+    const books_array = await Promise.resolve(books);
+    return res.send(JSON.stringify(books_array[isbn],null,4))
+  } catch (error) {
+    return res.send(error.message);
+  }
+
  });
   
-// Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-// Get keys from books object
-  let books_array = Object.values(books);
-  
-// filter books by author
-  let books_by_author = books_array.filter(book => book.author == req.params.author);
 
+public_users.get('/author/:author',async function (req, res) {
+
+try {
+  const author = req.params.author;
+
+  const books_array = await Promise.resolve(Object.values(books));
+
+  const books_by_author = books_array.filter(book => book.author == author);
+  
   return res.send(JSON.stringify(books_by_author,null,4));
+
+} catch (error) {
+  return res.send (error.message);
+}
+    
+
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Get keys from books object
-  let books_array = Object.values(books);
+public_users.get('/title/:title',async function (req, res) {
+  try {
+    const title = req.params.title;
 
-  // filter books by title
-  let books_with_title = books_array.filter(book => book.title == req.params.title);
-
-  return res.send(JSON.stringify(books_with_title, null, 4));
+    const books_array = await Promise.resolve(Object.values(books));
+  
+    const books_with_title = books_array.filter(book => book.title == title);
+  
+    return res.send(JSON.stringify(books_with_title, null, 4)); 
+  } catch (error) {
+    return res.send (error.message);
+  }
+  
 });
 
 //  Get book review
@@ -84,6 +108,10 @@ public_users.get('/review/:isbn',function (req, res) {
 
   return res.send(JSON.stringify(reviews, null, 4));
 });
+
+let getBook = new Promise((resolve, reject) => {
+  return public_users.get
+})
 
 
 module.exports.general = public_users;
